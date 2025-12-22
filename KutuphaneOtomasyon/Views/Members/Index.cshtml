@@ -1,0 +1,202 @@
+@model List<MemberViewModel>
+@{
+    ViewData["Title"] = "Üyeler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Kütüphane üyelerini görüntüleyin ve yönetin</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+        <i class="bi bi-person-plus me-2"></i>Yeni Üye
+    </button>
+</div>
+
+<div class="table-container">
+    <table class="table table-hover datatable" id="membersTable">
+        <thead>
+            <tr>
+                <th>Ad Soyad</th>
+                <th>E-posta</th>
+                <th>Telefon</th>
+                <th>Rol</th>
+                <th>Durum</th>
+                <th>Aktif Ödünç</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var member in Model)
+            {
+                <tr>
+                    <td class="fw-medium">@member.FullName</td>
+                    <td>@member.Email</td>
+                    <td>@(member.Phone ?? "-")</td>
+                    <td>
+                        @{
+                            var roleClass = member.Role switch
+                            {
+                                "admin" => "bg-danger",
+                                "librarian" => "bg-primary",
+                                _ => "bg-secondary"
+                            };
+                            var roleText = member.Role switch
+                            {
+                                "admin" => "Yönetici",
+                                "librarian" => "Kütüphaneci",
+                                _ => "Üye"
+                            };
+                        }
+                        <span class="badge @roleClass">@roleText</span>
+                    </td>
+                    <td>
+                        @{
+                            var statusClass = member.Status switch
+                            {
+                                "active" => "badge-active",
+                                "inactive" => "badge-inactive",
+                                "suspended" => "badge-overdue",
+                                _ => "bg-secondary"
+                            };
+                            var statusText = member.Status switch
+                            {
+                                "active" => "Aktif",
+                                "inactive" => "Pasif",
+                                "suspended" => "Askıda",
+                                _ => member.Status
+                            };
+                        }
+                        <span class="badge @statusClass">@statusText</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark">@member.ActiveLoans / @member.MaxLoanLimit</span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="@Url.Action("Details", "Members", new { id = member.MemberId })" class="btn btn-outline-primary" title="Detaylar">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Durum">
+                                    <i class="bi bi-gear"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item update-status" href="#" data-id="@member.MemberId" data-status="active">Aktif Yap</a></li>
+                                    <li><a class="dropdown-item update-status" href="#" data-id="@member.MemberId" data-status="inactive">Pasif Yap</a></li>
+                                    <li><a class="dropdown-item update-status" href="#" data-id="@member.MemberId" data-status="suspended">Askıya Al</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Yeni Üye Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addMemberForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ad Soyad *</label>
+                            <input type="text" name="FullName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">E-posta *</label>
+                            <input type="email" name="Email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefon</label>
+                            <input type="tel" name="Phone" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Doğum Tarihi</label>
+                            <input type="date" name="DateOfBirth" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Adres</label>
+                            <textarea name="Address" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Rol</label>
+                            <select name="Role" class="form-select">
+                                <option value="member">Üye</option>
+                                <option value="librarian">Kütüphaneci</option>
+                                <option value="admin">Yönetici</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Şifre</label>
+                            <input type="password" name="Password" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ödünç Limiti</label>
+                            <input type="number" name="MaxLoanLimit" class="form-control" value="3" min="1" max="10">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Add Member
+    $('#addMemberForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '@Url.Action("Create", "Members")',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            }
+        });
+    });
+
+    // Update Status
+    $('.update-status').on('click', function(e) {
+        e.preventDefault();
+        var memberId = $(this).data('id');
+        var status = $(this).data('status');
+        $.ajax({
+            url: '@Url.Action("UpdateStatus", "Members")',
+            type: 'POST',
+            data: {
+                memberId: memberId,
+                status: status,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            }
+        });
+    });
+});
+</script>
+}

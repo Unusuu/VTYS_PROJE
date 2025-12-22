@@ -1,0 +1,66 @@
+@model List<PopularBookViewModel>
+@{
+    ViewData["Title"] = "En Popüler Kitaplar";
+}
+
+<div class="mb-4">
+    <p class="text-muted mb-0">Son 30 günde en çok ödünç alınan kitaplar</p>
+</div>
+
+<div class="table-container">
+    @if (Model.Any())
+    {
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">#</th>
+                    <th>Kitap</th>
+                    <th>Yazar</th>
+                    <th class="text-end">Ödünç Sayısı</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{int rank = 1;}
+                @foreach (var book in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (rank <= 3)
+                            {
+                                var medalClass = rank switch
+                                {
+                                    1 => "text-warning",
+                                    2 => "text-secondary",
+                                    3 => "text-danger",
+                                    _ => ""
+                                };
+                                <i class="bi bi-trophy-fill @medalClass fs-4"></i>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-dark">@rank</span>
+                            }
+                        </td>
+                        <td class="fw-medium">
+                            <a href="@Url.Action("Details", "Books", new { id = book.BookId })" class="text-decoration-none">
+                                @book.Title
+                            </a>
+                        </td>
+                        <td>@book.Author</td>
+                        <td class="text-end">
+                            <span class="badge bg-primary fs-6">@book.LoanCount</span>
+                        </td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-bar-chart fs-1 d-block mb-2"></i>
+            Henüz yeterli veri yok
+        </div>
+    }
+</div>

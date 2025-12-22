@@ -1,0 +1,257 @@
+@model List<BookViewModel>
+@{
+    ViewData["Title"] = "Kitaplar";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Kütüphanedeki tüm kitapları görüntüleyin ve yönetin</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+        <i class="bi bi-plus-lg me-2"></i>Yeni Kitap
+    </button>
+</div>
+
+<div class="table-container">
+    <table class="table table-hover datatable" id="booksTable">
+        <thead>
+            <tr>
+                <th>ISBN</th>
+                <th>Kitap Adı</th>
+                <th>Yazar</th>
+                <th>Kategori</th>
+                <th>Yıl</th>
+                <th>Kopyalar</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in Model)
+            {
+                <tr>
+                    <td><code>@book.Isbn</code></td>
+                    <td class="fw-medium">@book.Title</td>
+                    <td>@book.Author</td>
+                    <td>@(book.Category ?? "-")</td>
+                    <td>@(book.PublishYear?.ToString() ?? "-")</td>
+                    <td>
+                        <span class="badge badge-available">@book.AvailableCopies müsait</span>
+                        <span class="badge bg-light text-dark">@book.TotalCopies toplam</span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="@Url.Action("Details", "Books", new { id = book.BookId })" class="btn btn-outline-primary" title="Detaylar">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary edit-book" data-id="@book.BookId" title="Düzenle">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger delete-book" data-id="@book.BookId" data-title="@book.Title" title="Sil">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Book Modal -->
+<div class="modal fade" id="addBookModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Yeni Kitap Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addBookForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">ISBN *</label>
+                            <input type="text" name="Isbn" class="form-control" required maxlength="13">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Kitap Adı *</label>
+                            <input type="text" name="Title" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Yazar *</label>
+                            <input type="text" name="Author" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Yayın Yılı</label>
+                            <input type="number" name="PublishYear" class="form-control" min="1800" max="2100">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sayfa Sayısı</label>
+                            <input type="number" name="PageCount" class="form-control" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Kategori</label>
+                            <input type="text" name="Category" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Yayınevi</label>
+                            <input type="text" name="Publisher" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Dil</label>
+                            <input type="text" name="Language" class="form-control" value="Türkçe">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Açıklama</label>
+                            <textarea name="Description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Book Modal -->
+<div class="modal fade" id="editBookModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Kitap Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editBookForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="BookId" id="editBookId">
+                <input type="hidden" name="Isbn" id="editIsbn">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Kitap Adı *</label>
+                            <input type="text" name="Title" id="editTitle" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Yazar *</label>
+                            <input type="text" name="Author" id="editAuthor" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Yayın Yılı</label>
+                            <input type="number" name="PublishYear" id="editPublishYear" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sayfa Sayısı</label>
+                            <input type="number" name="PageCount" id="editPageCount" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Kategori</label>
+                            <input type="text" name="Category" id="editCategory" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Yayınevi</label>
+                            <input type="text" name="Publisher" id="editPublisher" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Açıklama</label>
+                            <textarea name="Description" id="editDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Add Book
+    $('#addBookForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '@Url.Action("Create", "Books")',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert('Bir hata oluştu!');
+            }
+        });
+    });
+
+    // Edit Book - Load Data
+    $('.edit-book').on('click', function() {
+        var bookId = $(this).data('id');
+        $.get('@Url.Action("GetBook", "Books")/' + bookId, function(response) {
+            if (response.success) {
+                var data = response.data;
+                $('#editBookId').val(data.bookId);
+                $('#editIsbn').val(data.isbn);
+                $('#editTitle').val(data.title);
+                $('#editAuthor').val(data.author);
+                $('#editPublishYear').val(data.publishYear);
+                $('#editPageCount').val(data.pageCount);
+                $('#editCategory').val(data.category);
+                $('#editPublisher').val(data.publisher);
+                $('#editDescription').val(data.description);
+                $('#editBookModal').modal('show');
+            }
+        });
+    });
+
+    // Edit Book - Submit
+    $('#editBookForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '@Url.Action("Edit", "Books")',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            }
+        });
+    });
+
+    // Delete Book
+    $('.delete-book').on('click', function() {
+        var bookId = $(this).data('id');
+        var title = $(this).data('title');
+        if (confirm('"' + title + '" kitabını silmek istediğinize emin misiniz?')) {
+            $.ajax({
+                url: '@Url.Action("Delete", "Books")/' + bookId,
+                type: 'POST',
+                data: { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+}

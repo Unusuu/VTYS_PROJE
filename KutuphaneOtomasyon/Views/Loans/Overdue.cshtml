@@ -1,0 +1,68 @@
+@model List<ActiveLoanViewModel>
+@{
+    ViewData["Title"] = "Geciken Kitaplar";
+}
+
+<div class="mb-4">
+    <div class="alert alert-danger d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+        <div>
+            <strong>@Model.Count</strong> adet gecikmiş kitap bulunuyor!
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    @if (Model.Any())
+    {
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th>Kitap</th>
+                    <th>Üye</th>
+                    <th>Ödünç Tarihi</th>
+                    <th>Teslim Tarihi</th>
+                    <th>Gecikme</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var loan in Model)
+                {
+                    <tr class="table-danger">
+                        <td>
+                            <div class="fw-medium">@loan.BookTitle</div>
+                            <small class="text-muted">@loan.BookAuthor</small>
+                        </td>
+                        <td>
+                            <div>@loan.MemberName</div>
+                            <small class="text-muted">@loan.MemberEmail</small>
+                        </td>
+                        <td>@loan.LoanedAt.ToString("dd.MM.yyyy")</td>
+                        <td>@loan.DueAt.ToString("dd.MM.yyyy")</td>
+                        <td>
+                            <span class="badge badge-overdue fs-6">@loan.DaysOverdue gün</span>
+                        </td>
+                        <td>
+                            <form asp-action="ReturnBook" asp-controller="Loans" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="loanId" value="@loan.LoanId" />
+                                <input type="hidden" name="fineAmount" value="0" />
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="bi bi-check-lg me-1"></i>İade Al
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-emoji-smile fs-1 d-block mb-2 text-success"></i>
+            Geciken kitap bulunmuyor!
+        </div>
+    }
+</div>

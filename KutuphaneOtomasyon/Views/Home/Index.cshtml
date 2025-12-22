@@ -1,0 +1,159 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row g-4 mb-4">
+    <!-- Toplam Kitap -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="icon blue">
+                <i class="bi bi-journal-bookmark"></i>
+            </div>
+            <div class="stat-value">@Model.TotalBooks</div>
+            <div class="stat-label">Toplam Kitap</div>
+        </div>
+    </div>
+
+    <!-- Toplam Üye -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="icon green">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-value">@Model.TotalMembers</div>
+            <div class="stat-label">Aktif Üye</div>
+        </div>
+    </div>
+
+    <!-- Aktif Ödünç -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="icon orange">
+                <i class="bi bi-book"></i>
+            </div>
+            <div class="stat-value">@Model.ActiveLoans</div>
+            <div class="stat-label">Aktif Ödünç</div>
+        </div>
+    </div>
+
+    <!-- Geciken -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="icon red">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="stat-value">@Model.OverdueLoans</div>
+            <div class="stat-label">Geciken Kitap</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Son Ödünçler -->
+    <div class="col-12 col-lg-7">
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0 fw-semibold">Son Ödünç İşlemleri</h5>
+                @{
+                    var role = Context.Session.GetString("MemberRole");
+                    if (role == "admin" || role == "librarian")
+                    {
+                        <a href="@Url.Action("Active", "Loans")" class="btn btn-sm btn-outline-primary">
+                            Tümünü Gör <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    }
+                }
+            </div>
+
+            @if (Model.RecentLoans.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Kitap</th>
+                                <th>Üye</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var loan in Model.RecentLoans)
+                            {
+                                <tr>
+                                    <td class="fw-medium">@loan.BookTitle</td>
+                                    <td>@loan.MemberName</td>
+                                    <td>@loan.LoanedAt.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        @if (loan.IsOverdue)
+                                        {
+                                            <span class="badge badge-overdue">Gecikmiş</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-active">Aktif</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    Henüz ödünç işlemi bulunmuyor
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Popüler Kitaplar -->
+    <div class="col-12 col-lg-5">
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0 fw-semibold">
+                    <i class="bi bi-star text-warning me-2"></i>Popüler Kitaplar
+                </h5>
+                <span class="badge bg-light text-dark">Son 30 Gün</span>
+            </div>
+
+            @if (Model.PopularBooks.Any())
+            {
+                <div class="list-group list-group-flush">
+                    @{int rank = 1;}
+                    @foreach (var book in Model.PopularBooks)
+                    {
+                        <div class="list-group-item d-flex align-items-center px-0">
+                            <div class="me-3">
+                                <span class="badge rounded-pill bg-primary" style="width: 28px; height: 28px; line-height: 18px;">
+                                    @rank
+                                </span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-medium">@book.Title</div>
+                                <small class="text-muted">@book.Author</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-light text-dark">
+                                    @book.LoanCount ödünç
+                                </span>
+                            </div>
+                        </div>
+                        rank++;
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-bar-chart fs-1 d-block mb-2"></i>
+                    Henüz yeterli veri yok
+                </div>
+            }
+        </div>
+    </div>
+</div>

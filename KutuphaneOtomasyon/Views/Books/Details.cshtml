@@ -1,0 +1,228 @@
+@model BookViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    var copies = ViewBag.Copies as List<CopyViewModel>;
+}
+
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Books")">Kitaplar</a></li>
+        <li class="breadcrumb-item active">@Model.Title</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <!-- Kitap Bilgileri -->
+    <div class="col-lg-4">
+        <div class="table-container">
+            <div class="text-center mb-4">
+                <div class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 160px;">
+                    <i class="bi bi-book fs-1"></i>
+                </div>
+            </div>
+            <h4 class="fw-bold text-center mb-2">@Model.Title</h4>
+            <p class="text-muted text-center mb-4">@Model.Author</p>
+
+            <table class="table table-sm">
+                <tr>
+                    <th class="text-muted">ISBN</th>
+                    <td><code>@Model.Isbn</code></td>
+                </tr>
+                <tr>
+                    <th class="text-muted">Kategori</th>
+                    <td>@(Model.Category ?? "-")</td>
+                </tr>
+                <tr>
+                    <th class="text-muted">Yayınevi</th>
+                    <td>@(Model.Publisher ?? "-")</td>
+                </tr>
+                <tr>
+                    <th class="text-muted">Yayın Yılı</th>
+                    <td>@(Model.PublishYear?.ToString() ?? "-")</td>
+                </tr>
+                <tr>
+                    <th class="text-muted">Sayfa Sayısı</th>
+                    <td>@(Model.PageCount?.ToString() ?? "-")</td>
+                </tr>
+                <tr>
+                    <th class="text-muted">Dil</th>
+                    <td>@Model.Language</td>
+                </tr>
+            </table>
+
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <hr>
+                <p class="small text-muted">@Model.Description</p>
+            }
+        </div>
+    </div>
+
+    <!-- Kopyalar -->
+    <div class="col-lg-8">
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0 fw-semibold">
+                    <i class="bi bi-collection me-2"></i>Kopyalar (@copies?.Count)
+                </h5>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCopyModal">
+                    <i class="bi bi-plus-lg me-1"></i>Kopya Ekle
+                </button>
+            </div>
+
+            @if (copies?.Any() == true)
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Kopya ID</th>
+                                <th>Raf Konumu</th>
+                                <th>Durum</th>
+                                <th>Fiyat</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var copy in copies)
+                            {
+                                <tr>
+                                    <td>#@copy.CopyId</td>
+                                    <td><i class="bi bi-geo-alt text-primary me-1"></i>@copy.ShelfLocation</td>
+                                    <td>
+                                        @{
+                                            var statusClass = copy.Status switch
+                                            {
+                                                "available" => "badge-available",
+                                                "loaned" => "badge-loaned",
+                                                "damaged" => "bg-warning text-dark",
+                                                "lost" => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                            var statusText = copy.Status switch
+                                            {
+                                                "available" => "Müsait",
+                                                "loaned" => "Ödünç",
+                                                "damaged" => "Hasarlı",
+                                                "lost" => "Kayıp",
+                                                _ => copy.Status
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@statusText</span>
+                                    </td>
+                                    <td>@(copy.Price?.ToString("C") ?? "-")</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                Durum Değiştir
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item update-status" href="#" data-id="@copy.CopyId" data-status="available">Müsait</a></li>
+                                                <li><a class="dropdown-item update-status" href="#" data-id="@copy.CopyId" data-status="damaged">Hasarlı</a></li>
+                                                <li><a class="dropdown-item update-status" href="#" data-id="@copy.CopyId" data-status="lost">Kayıp</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    Henüz kopya eklenmemiş
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Add Copy Modal -->
+<div class="modal fade" id="addCopyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Kopya Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addCopyForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="BookId" value="@Model.BookId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Raf Konumu *</label>
+                        <input type="text" name="ShelfLocation" class="form-control" required placeholder="Örn: A-12-3">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Durum</label>
+                        <select name="Status" class="form-select">
+                            <option value="available">Müsait</option>
+                            <option value="damaged">Hasarlı</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fiyat</label>
+                        <input type="number" name="Price" class="form-control" step="0.01" min="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Durum Notu</label>
+                        <textarea name="ConditionNote" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Add Copy
+    $('#addCopyForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '@Url.Action("AddCopy", "Books")',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            }
+        });
+    });
+
+    // Update Copy Status
+    $('.update-status').on('click', function(e) {
+        e.preventDefault();
+        var copyId = $(this).data('id');
+        var status = $(this).data('status');
+        $.ajax({
+            url: '@Url.Action("UpdateCopyStatus", "Books")',
+            type: 'POST',
+            data: {
+                copyId: copyId,
+                status: status,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            }
+        });
+    });
+});
+</script>
+}

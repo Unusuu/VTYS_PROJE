@@ -1,0 +1,66 @@
+@using KutuphaneOtomasyon.Services
+@model List<MemberLoanStatsViewModel>
+@{
+    ViewData["Title"] = "Üye İstatistikleri";
+}
+
+<div class="mb-4">
+    <p class="text-muted mb-0">Üyelerin toplam ödünç alma istatistikleri</p>
+</div>
+
+<div class="table-container">
+    @if (Model.Any())
+    {
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th>Üye</th>
+                    <th>E-posta</th>
+                    <th class="text-center">Toplam</th>
+                    <th class="text-center">Aktif</th>
+                    <th class="text-center">İade</th>
+                    <th class="text-center">Gecikmiş</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var stat in Model)
+                {
+                    <tr>
+                        <td class="fw-medium">
+                            <a href="@Url.Action("Details", "Members", new { id = stat.MemberId })" class="text-decoration-none">
+                                @stat.MemberName
+                            </a>
+                        </td>
+                        <td>@stat.Email</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">@stat.TotalLoans</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge badge-loaned">@stat.ActiveLoans</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge badge-active">@stat.ReturnedLoans</span>
+                        </td>
+                        <td class="text-center">
+                            @if (stat.OverdueLoans > 0)
+                            {
+                                <span class="badge badge-overdue">@stat.OverdueLoans</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-dark">0</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-people fs-1 d-block mb-2"></i>
+            Henüz istatistik verisi yok
+        </div>
+    }
+</div>
