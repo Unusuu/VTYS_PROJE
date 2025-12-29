@@ -1,0 +1,104 @@
+@model List<ActiveLoanViewModel>
+@{
+    ViewData["Title"] = "İade Al";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Aktif ödünç işlemlerini görüntüleyin ve iade alın</p>
+    </div>
+    <div class="d-flex gap-2">
+        <span class="badge bg-primary fs-6">@Model.Count aktif ödünç</span>
+        <span class="badge bg-danger fs-6">@Model.Count(l => l.IsOverdue) gecikmiş</span>
+    </div>
+</div>
+
+<div class="custom-table animate-fadeIn">
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <table class="table table-hover data-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Kitap</th>
+                        <th>Üye</th>
+                        <th>Ödünç Tarihi</th>
+                        <th>Son İade Tarihi</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var loan in Model)
+                    {
+                        <tr class="@(loan.IsOverdue ? "table-danger" : "")">
+                            <td>
+                                <strong>@loan.BookTitle</strong>
+                                <br>
+                                <small class="text-muted">@loan.Author</small>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                        @loan.MemberName[0]
+                                    </div>
+                                    <div>
+                                        <strong>@loan.MemberName</strong>
+                                        <br>
+                                        <small class="text-muted">@loan.MemberEmail</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@loan.LoanedAt.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                @loan.DueAt.ToString("dd.MM.yyyy")
+                                @if (loan.IsOverdue)
+                                {
+                                    <br>
+                                    <small class="text-danger">
+                                        <i class="bi bi-exclamation-circle"></i>
+                                        @loan.DaysOverdue gün gecikmiş
+                                    </small>
+                                }
+                            </td>
+                            <td>
+                                @if (loan.IsOverdue)
+                                {
+                                    <span class="badge-status overdue">
+                                        <i class="bi bi-exclamation-circle me-1"></i>Gecikmiş
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status loaned">
+                                        <i class="bi bi-hourglass-split me-1"></i>Ödünçte
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="Return" asp-route-id="@loan.LoanId" method="post" 
+                                      onsubmit="return confirm('Bu kitabı iade almak istediğinize emin misiniz?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-gradient-success btn-sm">
+                                        <i class="bi bi-check-circle me-1"></i>İade Al
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                <h5 class="text-muted">Aktif ödünç işlemi bulunmuyor</h5>
+                <p class="text-muted">Tüm kitaplar iade edilmiş görünüyor.</p>
+                <a asp-action="Index" class="btn btn-gradient-primary">
+                    <i class="bi bi-plus me-1"></i>Yeni Ödünç Ver
+                </a>
+            </div>
+        }
+    </div>
+</div>

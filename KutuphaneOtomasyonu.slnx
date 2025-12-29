@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="app/KutuphaneOtomasyonu.API/KutuphaneOtomasyonu.API.csproj" />
+  <Project Path="app/KutuphaneOtomasyonu.Application/KutuphaneOtomasyonu.Application.csproj" />
+  <Project Path="app/KutuphaneOtomasyonu.Domain/KutuphaneOtomasyonu.Domain.csproj" />
+  <Project Path="app/KutuphaneOtomasyonu.Infrastructure/KutuphaneOtomasyonu.Infrastructure.csproj" />
+  <Project Path="tests/KutuphaneOtomasyonu.Tests.csproj" />
+</Solution>

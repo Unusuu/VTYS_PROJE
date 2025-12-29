@@ -1,0 +1,202 @@
+@model ReportIndexViewModel
+@{
+    ViewData["Title"] = "Raporlar";
+}
+
+<div class="row g-4">
+    <!-- En Çok Okunan Kitaplar -->
+    <div class="col-lg-6">
+        <div class="custom-table animate-fadeIn h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-trophy me-2 text-warning"></i>En Çok Okunan Kitaplar
+                    <small class="text-muted">(Son 30 Gün)</small>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.TopBooks.Any())
+                {
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Kitap</th>
+                                <th>Kategori</th>
+                                <th class="text-center">Ödünç</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ var rank = 1; }
+                            @foreach (var book in Model.TopBooks)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (rank == 1)
+                                        {
+                                            <span class="badge" style="background: gold; color: #333;">🥇</span>
+                                        }
+                                        else if (rank == 2)
+                                        {
+                                            <span class="badge" style="background: silver; color: #333;">🥈</span>
+                                        }
+                                        else if (rank == 3)
+                                        {
+                                            <span class="badge" style="background: #cd7f32; color: white;">🥉</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">@rank</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <strong>@book.Title</strong>
+                                        <br>
+                                        <small class="text-muted">@book.Author</small>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(book.Category))
+                                        {
+                                            <span class="badge bg-light text-dark">@book.Category</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary fs-6">@book.LoanCount</span>
+                                    </td>
+                                </tr>
+                                rank++;
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        Son 30 günde ödünç verilen kitap yok
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Üye Bazında Ödünç Raporu -->
+    <div class="col-lg-6">
+        <div class="custom-table animate-fadeIn h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-people me-2 text-primary"></i>Üye Bazında Ödünç Raporu
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.MemberLoanReports.Any())
+                {
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Üye</th>
+                                <th class="text-center">Toplam</th>
+                                <th class="text-center">Aktif</th>
+                                <th class="text-center">Geciken</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var member in Model.MemberLoanReports)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="user-avatar me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                                @member.FullName[0]
+                                            </div>
+                                            <div>
+                                                <strong>@member.FullName</strong>
+                                                <br>
+                                                <small class="text-muted">@member.Email</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary fs-6">@member.TotalLoans</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (member.ActiveLoans > 0)
+                                        {
+                                            <span class="badge bg-primary">@member.ActiveLoans</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (member.OverdueLoans > 0)
+                                        {
+                                            <span class="badge bg-danger">@member.OverdueLoans</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success">✓</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        Henüz ödünç kaydı bulunan üye yok
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- İstatistik Kartları -->
+<div class="row g-4 mt-4">
+    <div class="col-md-3">
+        <div class="stats-card text-center animate-fadeIn">
+            <div class="stats-card-icon blue mx-auto">
+                <i class="bi bi-book"></i>
+            </div>
+            <div class="stats-card-value mt-3">@Model.TopBooks.Sum(b => b.LoanCount)</div>
+            <div class="stats-card-label">Toplam Ödünç (30 Gün)</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card text-center animate-fadeIn">
+            <div class="stats-card-icon green mx-auto">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stats-card-value mt-3">@Model.MemberLoanReports.Count</div>
+            <div class="stats-card-label">Aktif Okuyucu</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card text-center animate-fadeIn">
+            <div class="stats-card-icon orange mx-auto">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="stats-card-value mt-3">
+                @(Model.MemberLoanReports.Any() ? (Model.MemberLoanReports.Sum(m => m.TotalLoans) / (decimal)Model.MemberLoanReports.Count).ToString("F1") : "0")
+            </div>
+            <div class="stats-card-label">Ortalama Ödünç/Üye</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card text-center animate-fadeIn">
+            <div class="stats-card-icon red mx-auto">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="stats-card-value mt-3">@Model.MemberLoanReports.Sum(m => m.OverdueLoans)</div>
+            <div class="stats-card-label">Toplam Gecikme</div>
+        </div>
+    </div>
+</div>

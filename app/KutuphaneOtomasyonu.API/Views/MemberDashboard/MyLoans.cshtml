@@ -1,0 +1,91 @@
+@model List<MemberLoanHistoryItem>
+@{
+    ViewData["Title"] = "Ödünç Geçmişim";
+}
+
+<div class="custom-table">
+    <div class="card-header">
+        <h5><i class="bi bi-clock-history me-2"></i>Tüm Ödünç Geçmişim</h5>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Kitap</th>
+                        <th>Yazar</th>
+                        <th>Ödünç Tarihi</th>
+                        <th>Son Tarih</th>
+                        <th>İade Tarihi</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var loan in Model)
+                    {
+                        <tr class="@(loan.IsReturned ? "" : (loan.Status == "Gecikmiş" ? "table-danger" : ""))">
+                            <td><strong>@loan.BookTitle</strong></td>
+                            <td>@loan.Author</td>
+                            <td>@loan.LoanedAt.ToString("dd.MM.yyyy")</td>
+                            <td>@loan.DueAt.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                @if (loan.IsReturned)
+                                {
+                                    @loan.ReturnedAt?.ToString("dd.MM.yyyy")
+                                    @if (loan.WasLate)
+                                    {
+                                        <small class="text-warning ms-1">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </small>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (loan.IsReturned)
+                                {
+                                    if (loan.WasLate)
+                                    {
+                                        <span class="badge-status" style="background: #fef3c7; color: #d97706;">
+                                            <i class="bi bi-check-circle me-1"></i>Geç İade
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-status returned">
+                                            <i class="bi bi-check-circle me-1"></i>İade Edildi
+                                        </span>
+                                    }
+                                }
+                                else if (loan.Status == "Gecikmiş")
+                                {
+                                    <span class="badge-status overdue">
+                                        <i class="bi bi-exclamation-circle me-1"></i>Gecikmiş
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status active">
+                                        <i class="bi bi-hourglass-split me-1"></i>Ödünçte
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                <h5 class="text-muted">Henüz ödünç geçmişiniz yok</h5>
+                <p class="text-muted">Kütüphaneden kitap ödünç aldığınızda burada görünecektir.</p>
+            </div>
+        }
+    </div>
+</div>

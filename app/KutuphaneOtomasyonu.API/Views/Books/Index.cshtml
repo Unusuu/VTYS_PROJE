@@ -1,0 +1,266 @@
+@model List<BookListViewModel>
+@{
+    ViewData["Title"] = "Kitaplar";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Kütüphanedeki tüm kitapları görüntüleyin ve yönetin</p>
+    </div>
+    <button type="button" class="btn btn-gradient-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+        <i class="bi bi-plus-lg me-2"></i>Yeni Kitap Ekle
+    </button>
+</div>
+
+<div class="custom-table animate-fadeIn">
+    <div class="card-body">
+        <table class="table table-hover data-table mb-0">
+            <thead>
+                <tr>
+                    <th>ISBN</th>
+                    <th>Kitap Adı</th>
+                    <th>Yazar</th>
+                    <th>Kategori</th>
+                    <th>Yayın Yılı</th>
+                    <th>Kopya</th>
+                    <th>Müsait</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var book in Model)
+                {
+                    <tr>
+                        <td><code>@book.Isbn</code></td>
+                        <td><strong>@book.Title</strong></td>
+                        <td>@book.Author</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(book.Category))
+                            {
+                                <span class="badge bg-light text-dark">@book.Category</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>@(book.PublishYear?.ToString() ?? "-")</td>
+                        <td><span class="badge bg-secondary">@book.CopyCount</span></td>
+                        <td>
+                            <span class="badge @(book.AvailableCopyCount > 0 ? "bg-success" : "bg-danger")">
+                                @book.AvailableCopyCount
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary" 
+                                        onclick="editBook(@book.BookId)" title="Düzenle">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <a href="@Url.Action("Details", new { id = book.BookId })" 
+                                   class="btn btn-outline-info" title="Detay">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@book.BookId" method="post" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('Bu kitabı silmek istediğinize emin misiniz?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Book Modal -->
+<div class="modal fade" id="addBookModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-book me-2"></i>Yeni Kitap Ekle
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">ISBN *</label>
+                            <input type="text" name="Isbn" class="form-control" required 
+                                   placeholder="978-XXX-XXXX" maxlength="13">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Kitap Adı *</label>
+                            <input type="text" name="Title" class="form-control" required 
+                                   placeholder="Kitap adını girin">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Yazar *</label>
+                            <input type="text" name="Author" class="form-control" required 
+                                   placeholder="Yazar adını girin">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Yayın Yılı</label>
+                            <input type="number" name="PublishYear" class="form-control" 
+                                   placeholder="2024" min="1800" max="2100">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sayfa Sayısı</label>
+                            <input type="number" name="PageCount" class="form-control" 
+                                   placeholder="250" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Kategori</label>
+                            <select name="Category" class="form-select">
+                                <option value="">Seçiniz</option>
+                                <option value="Roman">Roman</option>
+                                <option value="Bilim Kurgu">Bilim Kurgu</option>
+                                <option value="Tarih">Tarih</option>
+                                <option value="Felsefe">Felsefe</option>
+                                <option value="Bilim">Bilim</option>
+                                <option value="Kişisel Gelişim">Kişisel Gelişim</option>
+                                <option value="Çocuk">Çocuk</option>
+                                <option value="Şiir">Şiir</option>
+                                <option value="Diğer">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Yayınevi</label>
+                            <input type="text" name="Publisher" class="form-control" 
+                                   placeholder="Yayınevi adı">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Dil</label>
+                            <select name="Language" class="form-select">
+                                <option value="Türkçe" selected>Türkçe</option>
+                                <option value="İngilizce">İngilizce</option>
+                                <option value="Almanca">Almanca</option>
+                                <option value="Fransızca">Fransızca</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Açıklama</label>
+                            <textarea name="Description" class="form-control" rows="3" 
+                                      placeholder="Kitap hakkında kısa açıklama..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-gradient-primary">
+                        <i class="bi bi-check-lg me-1"></i>Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Book Modal -->
+<div class="modal fade" id="editBookModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-action="Edit" method="post" id="editBookForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="BookId" id="editBookId">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil me-2"></i>Kitap Düzenle
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">ISBN</label>
+                            <input type="text" id="editIsbn" name="Isbn" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Kitap Adı *</label>
+                            <input type="text" id="editTitle" name="Title" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Yazar *</label>
+                            <input type="text" id="editAuthor" name="Author" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Yayın Yılı</label>
+                            <input type="number" id="editPublishYear" name="PublishYear" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sayfa Sayısı</label>
+                            <input type="number" id="editPageCount" name="PageCount" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Kategori</label>
+                            <select id="editCategory" name="Category" class="form-select">
+                                <option value="">Seçiniz</option>
+                                <option value="Roman">Roman</option>
+                                <option value="Bilim Kurgu">Bilim Kurgu</option>
+                                <option value="Tarih">Tarih</option>
+                                <option value="Felsefe">Felsefe</option>
+                                <option value="Bilim">Bilim</option>
+                                <option value="Kişisel Gelişim">Kişisel Gelişim</option>
+                                <option value="Çocuk">Çocuk</option>
+                                <option value="Şiir">Şiir</option>
+                                <option value="Diğer">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Yayınevi</label>
+                            <input type="text" id="editPublisher" name="Publisher" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Dil</label>
+                            <select id="editLanguage" name="Language" class="form-select">
+                                <option value="Türkçe">Türkçe</option>
+                                <option value="İngilizce">İngilizce</option>
+                                <option value="Almanca">Almanca</option>
+                                <option value="Fransızca">Fransızca</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Açıklama</label>
+                            <textarea id="editDescription" name="Description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-gradient-primary">
+                        <i class="bi bi-check-lg me-1"></i>Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function editBook(bookId) {
+            $.get('/Books/GetBook/' + bookId, function(data) {
+                $('#editBookId').val(data.bookId);
+                $('#editIsbn').val(data.isbn);
+                $('#editTitle').val(data.title);
+                $('#editAuthor').val(data.author);
+                $('#editPublishYear').val(data.publishYear);
+                $('#editPageCount').val(data.pageCount);
+                $('#editCategory').val(data.category);
+                $('#editPublisher').val(data.publisher);
+                $('#editLanguage').val(data.language);
+                $('#editDescription').val(data.description);
+                $('#editBookForm').attr('action', '/Books/Edit/' + bookId);
+                new bootstrap.Modal(document.getElementById('editBookModal')).show();
+            });
+        }
+    </script>
+}

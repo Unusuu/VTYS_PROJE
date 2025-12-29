@@ -1,0 +1,106 @@
+@model List<BookListViewModel>
+@{
+    ViewData["Title"] = "Kitap Ara";
+}
+
+<!-- Search Form -->
+<div class="custom-table mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-10">
+                <label class="form-label">
+                    <i class="bi bi-search me-1"></i>Kitap Adı, Yazar veya ISBN
+                </label>
+                <input type="text" name="query" class="form-control form-control-lg" 
+                       placeholder="Aramak istediğiniz kitabı yazın..." 
+                       value="@ViewData["Query"]">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-gradient-primary w-100" style="height: 48px;">
+                    <i class="bi bi-search me-1"></i>Ara
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="custom-table">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-book me-2"></i>
+            @if (!string.IsNullOrEmpty(ViewData["Query"]?.ToString()))
+            {
+                @:Arama Sonuçları (@Model.Count kitap)
+            }
+            else
+            {
+                @:Tüm Kitaplar (@Model.Count kitap)
+            }
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Kitap Adı</th>
+                        <th>Yazar</th>
+                        <th>Kategori</th>
+                        <th>Yayın Yılı</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var book in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@book.Title</strong>
+                                <br>
+                                <small class="text-muted">ISBN: @book.Isbn</small>
+                            </td>
+                            <td>@book.Author</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(book.Category))
+                                {
+                                    <span class="badge bg-light text-dark">@book.Category</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>@(book.PublishYear?.ToString() ?? "-")</td>
+                            <td>
+                                @if (book.AvailableCopyCount > 0)
+                                {
+                                    <span class="badge-status active">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        @book.AvailableCopyCount mevcut
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status overdue">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        Mevcut değil
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-search fs-1 text-muted d-block mb-3"></i>
+                <h5 class="text-muted">Sonuç bulunamadı</h5>
+                <p class="text-muted">Farklı anahtar kelimeler deneyin.</p>
+            </div>
+        }
+    </div>
+</div>

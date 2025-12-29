@@ -1,0 +1,95 @@
+@model BookCreateViewModel
+@{
+    ViewData["Title"] = "Yeni Kitap Ekle";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="custom-table animate-fadeIn">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-book me-2"></i>Yeni Kitap Ekle
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="Isbn" class="form-label">ISBN *</label>
+                            <input asp-for="Isbn" class="form-control" placeholder="9780000000000" 
+                                   pattern="[0-9]{10,13}" inputmode="numeric" 
+                                   title="ISBN sadece 10-13 rakamdan oluşmalıdır">
+                            <span asp-validation-for="Isbn" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="Title" class="form-label">Kitap Adı *</label>
+                            <input asp-for="Title" class="form-control" placeholder="Kitap adını girin">
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Author" class="form-label">Yazar *</label>
+                            <input asp-for="Author" class="form-control" placeholder="Yazar adını girin">
+                            <span asp-validation-for="Author" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="PublishYear" class="form-label">Yayın Yılı *</label>
+                            <input asp-for="PublishYear" class="form-control" placeholder="2024" 
+                                   type="number" min="1800" max="2025" required>
+                            <span asp-validation-for="PublishYear" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="PageCount" class="form-label">Sayfa Sayısı</label>
+                            <input asp-for="PageCount" class="form-control" placeholder="250">
+                            <span asp-validation-for="PageCount" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Category" class="form-label">Kategori</label>
+                            <select asp-for="Category" class="form-select">
+                                <option value="">Seçiniz</option>
+                                <option value="Roman">Roman</option>
+                                <option value="Bilim Kurgu">Bilim Kurgu</option>
+                                <option value="Tarih">Tarih</option>
+                                <option value="Felsefe">Felsefe</option>
+                                <option value="Bilim">Bilim</option>
+                                <option value="Kişisel Gelişim">Kişisel Gelişim</option>
+                                <option value="Çocuk">Çocuk</option>
+                                <option value="Şiir">Şiir</option>
+                                <option value="Diğer">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Publisher" class="form-label">Yayınevi</label>
+                            <input asp-for="Publisher" class="form-control" placeholder="Yayınevi adı">
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Language" class="form-label">Dil</label>
+                            <select asp-for="Language" class="form-select">
+                                <option value="Türkçe">Türkçe</option>
+                                <option value="İngilizce">İngilizce</option>
+                                <option value="Almanca">Almanca</option>
+                                <option value="Fransızca">Fransızca</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label">Açıklama</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" 
+                                      placeholder="Kitap hakkında kısa açıklama..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-gradient-primary">
+                            <i class="bi bi-check-lg me-1"></i>Kaydet
+                        </button>
+                        <a asp-action="Index" class="btn btn-light">
+                            <i class="bi bi-arrow-left me-1"></i>Geri Dön
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

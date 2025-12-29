@@ -1,0 +1,568 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Kütüphane Otomasyonu</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --danger-gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f4f7fe;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #1a1f37 0%, #0d1025 100%);
+            padding: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-brand-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .sidebar-brand-text {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-brand-text small {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .sidebar-menu {
+            padding: 1rem 0;
+            list-style: none;
+            margin: 0;
+        }
+
+        .sidebar-menu-item {
+            margin: 4px 12px;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sidebar-menu-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-menu-link.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .sidebar-menu-link i {
+            font-size: 1.25rem;
+        }
+
+        .sidebar-submenu-title {
+            padding: 1rem 1.5rem 0.5rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1f37;
+            margin: 0;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 2rem;
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .stats-card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .stats-card-icon.blue { background: var(--primary-gradient); }
+        .stats-card-icon.green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .stats-card-icon.orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stats-card-icon.red { background: var(--danger-gradient); }
+
+        .stats-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1f37;
+            margin-bottom: 0.25rem;
+        }
+
+        .stats-card-label {
+            color: #8f9bba;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Tables */
+        .custom-table {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .custom-table .card-header {
+            background: white;
+            border-bottom: 1px solid #f0f3f9;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .custom-table .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: #1a1f37;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            border: none;
+            color: #8f9bba;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            padding: 1rem;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: #f0f3f9;
+        }
+
+        /* Badges */
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+
+        .badge-status.available { background: rgba(56, 239, 125, 0.15); color: #11998e; }
+        .badge-status.loaned { background: rgba(102, 126, 234, 0.15); color: #667eea; }
+        .badge-status.overdue { background: rgba(255, 75, 43, 0.15); color: #ff4b2b; }
+
+        /* Buttons */
+        .btn-gradient-primary {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .btn-gradient-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(56, 239, 125, 0.4);
+            color: white;
+        }
+
+        .btn-gradient-danger {
+            background: var(--danger-gradient);
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
+            color: white;
+        }
+
+        /* Form Controls */
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #f0f3f9;
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #f0f3f9;
+            padding: 1.5rem;
+        }
+
+        /* Alerts */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .alert-success {
+            background: rgba(56, 239, 125, 0.15);
+            color: #11998e;
+        }
+
+        .alert-danger {
+            background: rgba(255, 75, 43, 0.15);
+            color: #ff4b2b;
+        }
+
+        /* DataTables Customization */
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 8px 16px;
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 8px;
+        }
+
+        .page-link {
+            border-radius: 8px !important;
+            margin: 0 2px;
+            border: none;
+            color: #667eea;
+        }
+
+        .page-item.active .page-link {
+            background: var(--primary-gradient);
+            border: none;
+        }
+
+        /* Animations */
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Responsive */
+        @@media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-book"></i>
+            </div>
+            <div class="sidebar-brand-text">
+                Kütüphane
+                <small>Otomasyon Sistemi</small>
+            </div>
+        </div>
+
+        <div class="sidebar-submenu-title">Ana Menü</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "Home")" class="sidebar-menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                    <i class="bi bi-house-door"></i>
+                    <span>Ana Sayfa</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "Books")" class="sidebar-menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Books" ? "active" : "")">
+                    <i class="bi bi-book"></i>
+                    <span>Kitaplar</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "Members")" class="sidebar-menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Members" ? "active" : "")">
+                    <i class="bi bi-people"></i>
+                    <span>Üyeler</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-submenu-title">Ödünç İşlemleri</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "Loans")" class="sidebar-menu-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Loans" ? "active" : "")">
+                    <i class="bi bi-arrow-right-circle"></i>
+                    <span>Ödünç Ver</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("ActiveLoans", "Loans")" class="sidebar-menu-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ActiveLoans" ? "active" : "")">
+                    <i class="bi bi-arrow-left-circle"></i>
+                    <span>İade Al</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-submenu-title">Raporlar</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("Index", "Reports")" class="sidebar-menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reports" ? "active" : "")">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span>Raporlar</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-submenu-title mt-auto">Hesap</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="@Url.Action("ChangePassword", "Home")" class="sidebar-menu-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ChangePassword" ? "active" : "")">
+                    <i class="bi bi-key"></i>
+                    <span>Şifre Değiştir</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline w-100">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="sidebar-menu-link w-100 text-start border-0 bg-transparent" style="cursor: pointer;">
+                        <i class="bi bi-box-arrow-left"></i>
+                        <span>Çıkış Yap</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <div class="top-navbar">
+            <h1 class="page-title">@ViewData["Title"]</h1>
+            <div class="user-menu">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end">
+                        <div class="fw-semibold">@User.Identity?.Name</div>
+                        <small class="text-muted">
+                            @switch (User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)
+                            {
+                                case "admin":
+                                    <span class="badge bg-danger">Admin</span>
+                                    break;
+                                case "librarian":
+                                    <span class="badge bg-primary">Kütüphaneci</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">Üye</span>
+                                    break;
+                            }
+                        </small>
+                    </div>
+                    <div class="user-avatar">
+                        @(User.Identity?.Name?[0] ?? 'U')
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show animate-fadeIn" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show animate-fadeIn" role="alert">
+                    <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTables
+            if ($('.data-table').length) {
+                $('.data-table').DataTable({
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                    },
+                    pageLength: 10,
+                    responsive: true
+                });
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

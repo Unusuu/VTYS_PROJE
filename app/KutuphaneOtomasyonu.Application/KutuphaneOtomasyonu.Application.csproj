@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>KutuphaneOtomasyonu.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KutuphaneOtomasyonu.Domain\KutuphaneOtomasyonu.Domain.csproj" />
+    <ProjectReference Include="..\KutuphaneOtomasyonu.Infrastructure\KutuphaneOtomasyonu.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

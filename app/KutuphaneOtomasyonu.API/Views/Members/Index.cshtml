@@ -1,0 +1,126 @@
+@model List<MemberListViewModel>
+@{
+    ViewData["Title"] = "Üyeler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Kütüphane üyelerini görüntüleyin ve yönetin</p>
+    </div>
+    <a asp-action="Create" class="btn btn-gradient-primary">
+        <i class="bi bi-plus-lg me-2"></i>Yeni Üye Ekle
+    </a>
+</div>
+
+<div class="custom-table animate-fadeIn">
+    <div class="card-body">
+        <table class="table table-hover data-table mb-0">
+            <thead>
+                <tr>
+                    <th>Ad Soyad</th>
+                    <th>E-posta</th>
+                    <th>Telefon</th>
+                    <th>Rol</th>
+                    <th>Durum</th>
+                    <th>Kayıt Tarihi</th>
+                    <th>Aktif Ödünç</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var member in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-3" style="width: 36px; height: 36px; font-size: 0.9rem;">
+                                    @member.FullName[0]
+                                </div>
+                                <strong>@member.FullName</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="mailto:@member.Email" class="text-decoration-none">@member.Email</a>
+                        </td>
+                        <td>@(member.Phone ?? "-")</td>
+                        <td>
+                            @switch (member.Role)
+                            {
+                                case "admin":
+                                    <span class="badge bg-danger">Admin</span>
+                                    break;
+                                case "librarian":
+                                    <span class="badge bg-primary">Kütüphaneci</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">Üye</span>
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            @if (member.Status == "active")
+                            {
+                                <span class="badge-status available">Aktif</span>
+                            }
+                            else if (member.Status == "suspended")
+                            {
+                                <span class="badge-status overdue">Askıda</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@member.Status</span>
+                            }
+                        </td>
+                        <td>@member.JoinedAt.ToString("dd.MM.yyyy")</td>
+                        <td>
+                            @if (member.ActiveLoanCount > 0)
+                            {
+                                <span class="badge bg-primary">@member.ActiveLoanCount kitap</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (member.Role != "admin")
+                            {
+                                <a asp-action="Edit" asp-route-id="@member.MemberId" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                @if (member.Status == "active")
+                                {
+                                    <form asp-action="SetStatus" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bu üyeyi pasif hale getirmek istediğinizden emin misiniz?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="memberId" value="@member.MemberId" />
+                                        <input type="hidden" name="status" value="inactive" />
+                                        <button type="submit" class="btn btn-sm btn-outline-warning" title="Pasif Yap">
+                                            <i class="bi bi-pause-circle"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="SetStatus" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bu üyeyi aktif hale getirmek istediğinizden emin misiniz?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="memberId" value="@member.MemberId" />
+                                        <input type="hidden" name="status" value="active" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Aktif Yap">
+                                            <i class="bi bi-play-circle"></i>
+                                        </button>
+                                    </form>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted small">-</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

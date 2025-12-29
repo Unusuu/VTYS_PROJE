@@ -1,0 +1,263 @@
+@model Book
+@using System.Globalization
+@{
+    ViewData["Title"] = "Kitap Detayı";
+    var turkishCulture = new CultureInfo("tr-TR");
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="custom-table animate-fadeIn">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-book me-2"></i>@Model.Title
+                </h5>
+                <div>
+                    <a asp-action="Edit" asp-route-id="@Model.BookId" class="btn btn-gradient-primary btn-sm">
+                        <i class="bi bi-pencil me-1"></i>Düzenle
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="text-muted" style="width: 40%;">ISBN:</th>
+                                <td><code>@Model.Isbn</code></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Yazar:</th>
+                                <td>@Model.Author</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Yayın Yılı:</th>
+                                <td>@(Model.PublishYear?.ToString() ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Kategori:</th>
+                                <td>@(Model.Category ?? "-")</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="text-muted" style="width: 40%;">Yayınevi:</th>
+                                <td>@(Model.Publisher ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Sayfa Sayısı:</th>
+                                <td>@(Model.PageCount?.ToString() ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Dil:</th>
+                                <td>@Model.Language</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Eklenme Tarihi:</th>
+                                <td>@Model.CreatedAt.ToString("dd.MM.yyyy")</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="mt-3">
+                        <h6 class="text-muted">Açıklama:</h6>
+                        <p>@Model.Description</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Kopyalar -->
+        <div class="custom-table animate-fadeIn mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-files me-2"></i>Kopyalar (@Model.Copies.Count)
+                </h5>
+                <button type="button" class="btn btn-gradient-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCopyModal">
+                    <i class="bi bi-plus me-1"></i>Kopya Ekle
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Kopya ID</th>
+                            <th>Raf Konumu</th>
+                            <th>Durum</th>
+                            <th>Fiyat</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var copy in Model.Copies)
+                        {
+                            <tr>
+                                <td>#@copy.CopyId</td>
+                                <td><i class="bi bi-geo-alt me-1"></i>@copy.ShelfLocation</td>
+                                <td>
+                                    @if (copy.Status == "available")
+                                    {
+                                        <span class="badge-status available">Müsait</span>
+                                    }
+                                    else if (copy.Status == "loaned")
+                                    {
+                                        <span class="badge-status loaned">Ödünçte</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@copy.Status</span>
+                                    }
+                                </td>
+                                <td>@(copy.Price?.ToString("C", turkishCulture) ?? "-")</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" data-bs-target="#editCopyModal"
+                                            onclick="setEditCopyData(@copy.CopyId, '@copy.ShelfLocation', '@(copy.Price?.ToString("0.00") ?? "")')">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    @if (copy.Status == "available")
+                                    {
+                                        <form asp-action="DeleteCopy" method="post" class="d-inline" 
+                                              onsubmit="return confirm('Bu kopyayı silmek istediğinizden emin misiniz?')">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="copyId" value="@copy.CopyId" />
+                                            <input type="hidden" name="bookId" value="@Model.BookId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Copies.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                    Bu kitabın henüz kopyası yok
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="stats-card animate-fadeIn">
+            <div class="text-center">
+                <div class="stats-card-icon blue mx-auto">
+                    <i class="bi bi-book"></i>
+                </div>
+                <h4 class="mt-3">@Model.Title</h4>
+                <p class="text-muted">@Model.Author</p>
+                
+                <hr>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="stats-card-value">@Model.Copies.Count</div>
+                        <div class="stats-card-label">Toplam Kopya</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stats-card-value text-success">@Model.Copies.Count(c => c.Status == "available")</div>
+                        <div class="stats-card-label">Müsait</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a asp-action="Index" class="btn btn-light w-100 mt-3">
+            <i class="bi bi-arrow-left me-1"></i>Kitap Listesine Dön
+        </a>
+    </div>
+</div>
+
+<!-- Add Copy Modal -->
+<div class="modal fade" id="addCopyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="AddCopy" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="bookId" value="@Model.BookId" />
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle me-2"></i>Yeni Kopya Ekle
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Raf Konumu *</label>
+                        <input type="text" name="shelfLocation" class="form-control" required
+                               placeholder="Örn: A-12-3">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fiyat (₺)</label>
+                        <input type="number" name="price" class="form-control" step="0.01"
+                               placeholder="Örn: 45.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-gradient-success">
+                        <i class="bi bi-check-lg me-1"></i>Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Copy Modal -->
+<div class="modal fade" id="editCopyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="UpdateCopy" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="copyId" id="editCopyId" />
+                <input type="hidden" name="bookId" value="@Model.BookId" />
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil me-2"></i>Kopya Düzenle
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Raf Konumu *</label>
+                        <input type="text" name="shelfLocation" id="editShelfLocation" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fiyat (₺)</label>
+                        <input type="number" name="price" id="editPrice" class="form-control" step="0.01">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-gradient-primary">
+                        <i class="bi bi-check-lg me-1"></i>Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setEditCopyData(copyId, shelfLocation, price) {
+            document.getElementById('editCopyId').value = copyId;
+            document.getElementById('editShelfLocation').value = shelfLocation;
+            document.getElementById('editPrice').value = price;
+        }
+    </script>
+}
+

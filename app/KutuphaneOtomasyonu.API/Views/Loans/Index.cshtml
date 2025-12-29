@@ -1,0 +1,113 @@
+@model LoanCreateViewModel
+@{
+    ViewData["Title"] = "Ödünç Ver";
+}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="custom-table animate-fadeIn">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-arrow-right-circle me-2"></i>Kitap Ödünç Ver
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="MemberId" class="form-label">
+                            <i class="bi bi-person me-1"></i>Üye Seçin *
+                        </label>
+                        <select asp-for="MemberId" class="form-select form-select-lg">
+                            <option value="">-- Üye Seçin --</option>
+                            @foreach (var member in Model.Members)
+                            {
+                                <option value="@member.MemberId">@member.FullName - @member.Email</option>
+                            }
+                        </select>
+                        <span asp-validation-for="MemberId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="CopyId" class="form-label">
+                            <i class="bi bi-book me-1"></i>Kitap Kopyası Seçin *
+                        </label>
+                        <select asp-for="CopyId" class="form-select form-select-lg">
+                            <option value="">-- Müsait Kitap Seçin --</option>
+                            @foreach (var copy in Model.AvailableCopies)
+                            {
+                                <option value="@copy.CopyId">@copy.DisplayText</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CopyId" class="text-danger"></span>
+                        @if (!Model.AvailableCopies.Any())
+                        {
+                            <div class="text-warning mt-2">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Müsait kitap kopyası bulunmuyor
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="LoanDays" class="form-label">
+                            <i class="bi bi-calendar me-1"></i>Ödünç Süresi (Gün)
+                        </label>
+                        <select asp-for="LoanDays" class="form-select">
+                            <option value="7">7 Gün</option>
+                            <option value="14" selected>14 Gün (Varsayılan)</option>
+                            <option value="21">21 Gün</option>
+                            <option value="30">30 Gün</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient-success btn-lg w-100">
+                        <i class="bi bi-check-circle me-2"></i>Ödünç Ver
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="stats-card animate-fadeIn h-100">
+            <div class="text-center">
+                <div class="stats-card-icon green mx-auto" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                    <i class="bi bi-arrow-right-circle"></i>
+                </div>
+                <h4 class="mt-4">Ödünç İşlemi</h4>
+                <p class="text-muted">
+                    Üye ve kitap seçerek ödünç işlemini gerçekleştirin.
+                </p>
+                
+                <hr class="my-4">
+                
+                <div class="text-start">
+                    <h6 class="text-muted mb-3">Ödünç Kuralları:</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Varsayılan ödünç süresi 14 gündür
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Bir üye en fazla 3 kitap ödünç alabilir
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                            Gecikme durumunda ceza uygulanabilir
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Üye ve kitap seçimlerinde dinamik bilgi gösterimi eklenebilir
+    </script>
+}
